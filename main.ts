@@ -6,7 +6,6 @@
 // }
 
 
-let address = 74
 
 // pins.i2cWriteBuffer(address, buffer, false)
 
@@ -64,7 +63,7 @@ namespace BlynkGate {
 
         // Gửi chuỗi dữ liệu qua giao thức I2C
         SendStringToI2C(loStr)
-        DBSerial(loStr)
+        // DBSerial(loStr)
     }
 
     function SendStringToI2C(loStr: string) {
@@ -75,6 +74,7 @@ namespace BlynkGate {
         }
         // Ghi buffer qua I2C đến địa chỉ thiết bị mong muốn (giả sử là 0x42)
         // let address = 0x42
+        let address = 74
         pins.i2cWriteBuffer(address, buffer, false)
     }
 
