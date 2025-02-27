@@ -6,9 +6,39 @@ namespace BlynkConfig {
 }
 namespace Profile {
     export const AUTH_TOKEN: string = BlynkConfig.AUTH_TOKEN;
-    export const SSID: string = "MakerLab.vn"; // Nhập tên wifi của bạn (Băng thông 2.4Ghz). Bạn có thể kiểm tra với điện thoại thông minh của mình để biết tên wifi
+    export const SSID: string = "Hshop.vn"; // Nhập tên wifi của bạn (Băng thông 2.4Ghz). Bạn có thể kiểm tra với điện thoại thông minh của mình để biết tên wifi
     export const PASSWORD: string = "";        // Nhập mật khẩu wifi của bạn
 }
-// basic.forever(function () {
+
 BlynkGate.connect(Profile.AUTH_TOKEN, Profile.SSID, Profile.PASSWORD)
-// })
+
+// basic.pause(15000)
+// BlynkGate.DBSerial("RUN virtualWrite")
+let bttState: number = 1;
+
+basic.forever(function() {
+    input.onButtonPressed(Button.A, function () {
+        bttState = bttState - 1;
+        if(bttState<0) bttState = 1;
+        basic.showLeds(`
+        . . . . .
+        . . . . .
+        . . # . .
+        . . . . .
+        . . . . .
+        `)
+        BlynkGate.virtualWrite(4, bttState.toString());
+
+    })
+    basic.showLeds(`
+        . . . . .
+        . . . . .
+        . . . . .
+        . . . . .
+        . . . . .
+        `)
+
+})
+
+
+
