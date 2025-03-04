@@ -283,7 +283,7 @@ namespace BlynkGate {
 
                 let request1 = { pin: parseInt(tempVirtualPin) };
                 let param = { len: valueTemp.length, buff: valueTemp, buff_size: valueTemp.length };
-                Blynk_I2C_WriteDefault(request1., parseInt(param.buff));
+                // Blynk_I2C_WriteDefault(request1., parseInt(param.buff));
             }
         }
     }
