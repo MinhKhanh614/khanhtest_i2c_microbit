@@ -42,7 +42,7 @@ namespace BlynkGate {
 
 
 
-    function SendStringToI2C(loStr: string) {
+    export function SendStringToI2C(loStr: string) {
         // Chuyển đổi chuỗi thành buffer
         let buffer = pins.createBuffer(loStr.length)
         for (let i = 0; i < loStr.length; i++) {
