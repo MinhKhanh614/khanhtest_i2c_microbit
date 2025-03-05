@@ -17,16 +17,17 @@ BlynkGate.connect(Profile.AUTH_TOKEN, Profile.SSID, Profile.PASSWORD)
 let bttState: number = 1;
 
 // setBlynkWriteCallback((request, param) => {
-
-//     if(request==4){
+//     let req = request.buff
+//     let pa = param.
+//     if(parseInt(req)==4){
 //         bttState = param;
 //     }
 // });
 
-basic.forever(function() {
+basic.forever(function () {
     input.onButtonPressed(Button.A, function () {
         bttState = bttState - 1;
-        if(bttState<0) bttState = 1;
+        if (bttState < 0) bttState = 1;
         basic.showLeds(`
         . . . . .
         . . . . .
@@ -38,8 +39,10 @@ basic.forever(function() {
         BlynkGate.virtualWrite(4, bttState.toString());
 
     })
-    BlynkGate.checkI2CThenSendSerial();
-basic.showNumber(bttState);
+    
+    input.onButtonPressed(Button.B, BlynkGate.checkI2CThenSendSerial);
+
+    basic.showNumber(bttState);
     basic.showLeds(`
         . . . . .
         . . . . .

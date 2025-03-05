@@ -1,106 +1,3 @@
-// let text = "Hello, world!"
-// let buffer = pins.createBuffer(text.length)
-
-// for (let i = 0; i < text.length; i++) {
-//     buffer.setNumber(NumberFormat.UInt8LE, i, text.charCodeAt(i))
-// }
-
-
-
-// pins.i2cWriteBuffer(address, buffer, false)
-
-// class BlynkGate {
-//     private auth: string
-//     private ssid: string
-//     private pass: string
-
-//     constructor() {
-//         this.auth = ""
-//         this.ssid = ""
-//         this.pass = ""
-//     }
-
-//     connect(auth_: string, ssid_: string, pass_: string) {
-//         // Tạo chuỗi dữ liệu theo định dạng mong muốn
-//         let loStr = "connect " + auth_ + " " + ssid_ + " " + pass_ + '\n'
-//         this.auth = auth_
-//         this.ssid = ssid_
-//         this.pass = pass_
-
-//         // Gửi chuỗi dữ liệu qua giao thức I2C
-//         this.SendStringToI2C(loStr)
-//         this.DBSerial(loStr)
-//     }
-
-//     SendStringToI2C(loStr: string) {
-//         // Chuyển đổi chuỗi thành buffer
-//         let buffer = pins.createBuffer(loStr.length)
-//         for (let i = 0; i < loStr.length; i++) {
-//             buffer.setNumber(NumberFormat.UInt8LE, i, loStr.charCodeAt(i))
-//         }
-//         // Ghi buffer qua I2C đến địa chỉ thiết bị mong muốn (giả sử là 0x42)
-//         // let address = 0x42
-//         pins.i2cWriteBuffer(address, buffer, false)
-//     }
-
-//     DBSerial(loStr: string) {
-//         // Ghi chuỗi ra cổng serial cho mục đích debug
-//         serial.writeString(loStr)
-//     }
-// }
-
-
-//% color="#AA278D"
-
-let blynkWriteCallback: (request: BlynkI2CParam, param: BlynkI2CParam) => void;
-
-function setBlynkWriteCallback(callback: (request: BlynkI2CParam, param: BlynkI2CParam) => void) {
-    blynkWriteCallback = callback;
-}
-
-function Blynk_I2C_WriteDefault(request: BlynkI2CParam, param: BlynkI2CParam) {
-    if (blynkWriteCallback) {
-        blynkWriteCallback(request, param);
-    } else {
-        basic.showString("No callback set");
-    }
-}
-
-
-class BlynkI2CParam {
-    buff: string;
-    len: number;
-    buff_size: number;
-
-    constructor(buff: string, len: number, buff_size: number) {
-        this.buff = buff;
-        this.len = len;
-        this.buff_size = buff_size;
-    }
-
-    asStr(): string {
-        return this.buff;
-    }
-
-    asString(): string {
-        return this.buff;
-    }
-
-    asInt(): number {
-        return parseInt(this.buff);
-    }
-
-    asLong(): number {
-        return parseInt(this.buff);
-    }
-
-    asFloat(): number {
-        return parseFloat(this.buff);
-    }
-}
-
-
-
 namespace BlynkGate {
 
     const slaveAddress = 74; // Địa chỉ I2C của thiết bị slave
@@ -129,7 +26,7 @@ namespace BlynkGate {
     interface BlynkReq {
         pin: number;
     }
-    
+
 
     export function connect(auth_: string, ssid_: string, pass_: string) {
         // Tạo chuỗi dữ liệu theo định dạng mong muốn
@@ -182,17 +79,32 @@ namespace BlynkGate {
     function splitString(motherString: string, command: string, startSymbol: string, stopSymbol: string, offset: number): string {
         let lenOfCommand = command.length;
         let posOfCommand = motherString.indexOf(command);
+
+        // Kiểm tra nếu không tìm thấy command trong chuỗi
+        if (posOfCommand === -1) return '';
+
         let posOfStartSymbol = motherString.indexOf(startSymbol, posOfCommand + lenOfCommand);
+
+        // Kiểm tra nếu không tìm thấy startSymbol sau command
+        if (posOfStartSymbol === -1) return '';
 
         while (offset > 0) {
             offset--;
             posOfStartSymbol = motherString.indexOf(startSymbol, posOfStartSymbol + 1);
+
+            // Kiểm tra nếu không tìm thấy startSymbol sau offset
+            if (posOfStartSymbol === -1) return '';
         }
 
         let posOfStopSymbol = motherString.indexOf(stopSymbol, posOfStartSymbol + 1);
 
-        return motherString.substr(posOfStartSymbol + 1, posOfStopSymbol);
+        // Kiểm tra nếu không tìm thấy stopSymbol sau startSymbol
+        if (posOfStopSymbol === -1) return '';
+
+        // Trả về phần chuỗi từ startSymbol đến stopSymbol
+        return motherString.substr(posOfStartSymbol + 1, posOfStopSymbol - posOfStartSymbol - 1);
     }
+
 
 
     export function SetupCharArrayToBuffer4(inputCharArray: string, len: number): void {
@@ -234,6 +146,7 @@ namespace BlynkGate {
         let isEmptyData = false;
 
         while (!isEmptyData) {
+            // Gửi lệnh getData
             let tempCharHeader = "";
 
             let tempHeader: SerialBlynkI2CData = {
@@ -244,50 +157,53 @@ namespace BlynkGate {
                 data: ''
             };
 
-            tempCharHeader += String.fromCharCode(1);
-
-
+            // Gửi lệnh GET_DATA qua I2C
+            tempCharHeader += String.fromCharCode(0x01);  // Thêm header (giống với `tempHeader` trong C++)
             I2C_writeString(slaveAddress, tempCharHeader, tempCharHeader.length);
-            // DBSerial(tempCharHeader);
-            control.waitMicros(1000);
 
-            let buffer = pins.i2cReadBuffer(slaveAddress, 32);
-            DBSerial(buffer.toString());
+            control.waitMicros(1000);  // Tạm dừng một chút để I2C trả lời
+
+            let buffer = pins.i2cReadBuffer(slaveAddress, 32);  // Đọc dữ liệu từ I2C
+            DBSerial(buffer.toHex());
             let countIndex = 0;
 
             while (buffer.length > countIndex) {
                 let c = String.fromCharCode(buffer[countIndex]);
                 tempCharHeader += c;
+
+                // Kiểm tra điều kiện như trong C++
                 if (countIndex > 3) {
-                    if (tempHeader.lenData != 0) {
+                    if (tempHeader.lenData !== 0) {
                         if (countIndex < (tempHeader.lenData + 4)) {
-                            dataString += c;
+                            dataString += c;  // Thêm dữ liệu vào chuỗi
                         }
                     } else {
-                        isEmptyData = true;
+                        isEmptyData = true;  // Không còn dữ liệu để nhận
                     }
                 }
                 countIndex++;
             }
+            // DBSerial(tempCharHeader);
+            DBSerial('\n');
         }
-
+        // Nếu có dữ liệu, thực hiện xử lý
         if (dataString.length > 0) {
-            control.waitMicros(10000);
-            serial.writeLine(dataString);
+            control.waitMicros(10000);  // Tạm dừng trước khi gửi dữ liệu qua serial
+            // DBSerial(dataString);
 
-            if (dataString.indexOf(BLYNK_I2C_CMD_VIRTUAL_PIN_RX) == 0) {
+            // Kiểm tra và xử lý dữ liệu nếu là lệnh Virtual Pin RX
+            if (dataString.indexOf(BLYNK_I2C_CMD_VIRTUAL_PIN_RX) === 0) {
                 let tempVirtualPin = splitString(dataString, BLYNK_I2C_CMD_VIRTUAL_PIN_RX, " ", " ", 0);
                 let valueTemp = splitString(dataString, BLYNK_I2C_CMD_VIRTUAL_PIN_RX, " ", " ", 1);
-                serial.writeLine(tempVirtualPin);
-                serial.writeLine(valueTemp);
+
+                // DBSerial(tempVirtualPin);
+                // DBSerial(valueTemp);
 
                 let request1 = { pin: parseInt(tempVirtualPin) };
                 let param = { len: valueTemp.length, buff: valueTemp, buff_size: valueTemp.length };
-                // Blynk_I2C_WriteDefault(request1., parseInt(param.buff));
             }
         }
     }
-
 }
 
 class KeyValuePair<K, V> {
@@ -344,4 +260,11 @@ class Queue<K, V> {
     }
 }
 
+class BlynkWriteDefualt {
+    Write() {
+    }
+}
 
+// class externBlynkWriteDefualt extends BlynkWriteDefualt {
+//     Write(vPin: )
+// }
