@@ -51,6 +51,7 @@ namespace BlynkGate {
         // Ghi buffer qua I2C đến địa chỉ thiết bị mong muốn (giả sử là 0x42)
         // let address = 0x42
         let address = 74
+        serial.writeBuffer(buffer)
         pins.i2cWriteBuffer(address, buffer, false)
     }
 
