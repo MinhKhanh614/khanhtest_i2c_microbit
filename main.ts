@@ -68,7 +68,7 @@ namespace BlynkGate {
         // SendStringToI2C(tempStr);
     }
 
-    function I2C_writeString(myAdd: number, myString: string, myLen: number): void {
+    export function I2C_writeString(myAdd: number, myString: string, myLen: number): void {
         pins.i2cWriteBuffer(myAdd, pins.createBufferFromArray(myString.split('').map(c => c.charCodeAt(0))));
         control.waitMicros(1000);
     }
@@ -115,6 +115,7 @@ namespace BlynkGate {
             let temHeader: SerialBlynkI2CData = {
                 id: '0',
                 modeId: '2',
+                // modeId: '1',
                 lenData: 0,
                 checkSumData: 0,
                 data: ''
@@ -159,7 +160,8 @@ namespace BlynkGate {
             };
 
             // Gửi lệnh GET_DATA qua I2C
-            tempCharHeader += String.fromCharCode(0x01);  // Thêm header (giống với `tempHeader` trong C++)
+            tempCharHeader += String.fromCharCode(1);  // Thêm header (giống với `tempHeader` trong C++)
+            serial.writeLine(tempCharHeader)
             I2C_writeString(slaveAddress, tempCharHeader, tempCharHeader.length);
 
             control.waitMicros(1000);  // Tạm dừng một chút để I2C trả lời
