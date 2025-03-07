@@ -2,9 +2,7 @@
     "name": "khanhTest_I2C_micro:bit",
     "description": "",
     "dependencies": {
-        "core": "*",
-        "radio": "*",
-        "microphone": "*"
+        "core": "*"
     },
     "files": [
         "main.ts",

@@ -12,49 +12,27 @@ namespace Profile {
 
 BlynkGate.connect(Profile.AUTH_TOKEN, Profile.SSID, Profile.PASSWORD)
 
-// basic.pause(15000)
-// BlynkGate.DBSerial("RUN virtualWrite")
 let bttState: number = 1;
 
-// setBlynkWriteCallback((request, param) => {
-//     let req = request.buff
-//     let pa = param.
-//     if(parseInt(req)==4){
-//         bttState = param;
-//     }
-// });
 
 basic.forever(function () {
     input.onButtonPressed(Button.A, function () {
         bttState = bttState - 1;
         if (bttState < 0) bttState = 1;
-        basic.showLeds(`
-        . . . . .
-        . . . . .
-        . . # . .
-        . . . . .
-        . . . . .
-        `)
-
         BlynkGate.virtualWrite(4, bttState.toString());
-
     })
-    
-    input.onButtonPressed(Button.B, BlynkGate.checkI2CThenSendSerial);
-
     basic.showNumber(bttState);
-    basic.showLeds(`
-        . . . . .
-        . . . . .
-        . . . . .
-        . . . . .
-        . . . . .
-        `)
+    BlynkGate.checkI2CThenSendSerial(handleI2CData)
 })
 
-
-
-
-// loops.everyInterval(500, function() {
-//     BlynkGate.checkI2CThenSendSerial
-// })
+// Hàm callback xử lý dữ liệu
+function handleI2CData(pin: number, value: number): void {
+    // console.log(`Pin: ${pin}, Value: ${value}`);
+    serial.writeLine(pin.toString())
+    serial.writeLine(value.toString())
+    // Thực hiện các tác vụ khác ở đây
+    if (pin === 4) {
+        // console.log(`Special processing for pin 4: ${value}`);
+        bttState = value;
+    }
+}

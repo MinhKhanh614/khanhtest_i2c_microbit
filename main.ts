@@ -77,37 +77,6 @@ namespace BlynkGate {
         serial.writeLine(message);
     }
 
-    function splitString(motherString: string, command: string, startSymbol: string, stopSymbol: string, offset: number): string {
-        let lenOfCommand = command.length;
-        let posOfCommand = motherString.indexOf(command);
-
-        // Kiểm tra nếu không tìm thấy command trong chuỗi
-        if (posOfCommand === -1) return '';
-
-        let posOfStartSymbol = motherString.indexOf(startSymbol, posOfCommand + lenOfCommand);
-
-        // Kiểm tra nếu không tìm thấy startSymbol sau command
-        if (posOfStartSymbol === -1) return '';
-
-        while (offset > 0) {
-            offset--;
-            posOfStartSymbol = motherString.indexOf(startSymbol, posOfStartSymbol + 1);
-
-            // Kiểm tra nếu không tìm thấy startSymbol sau offset
-            if (posOfStartSymbol === -1) return '';
-        }
-
-        let posOfStopSymbol = motherString.indexOf(stopSymbol, posOfStartSymbol + 1);
-
-        // Kiểm tra nếu không tìm thấy stopSymbol sau startSymbol
-        if (posOfStopSymbol === -1) return '';
-
-        // Trả về phần chuỗi từ startSymbol đến stopSymbol
-        return motherString.substr(posOfStartSymbol + 1, posOfStopSymbol - posOfStartSymbol - 1);
-    }
-
-
-
     export function SetupCharArrayToBuffer4(inputCharArray: string, len: number): void {
         const timeSend = Math.floor(len / KXN_BYTE_PER_TIME_SEND);
 
@@ -142,10 +111,10 @@ namespace BlynkGate {
         }
     }
 
+    export function checkI2CThenSendSerial(callback: (pin: number, value: number) => void): void {
 
-    export function checkI2CThenSendSerial(): void {
-        let dataString = "";
         let isEmptyData = false;
+        let tempStringData: string = '';
 
         while (!isEmptyData) {
             // Gửi lệnh getData
@@ -171,116 +140,59 @@ namespace BlynkGate {
 
             let buffer = pins.i2cReadBuffer(slaveAddress, 32);  // Đọc dữ liệu từ I2C
             serial.writeBuffer(buffer);
-            // serial.
-            let myArr = buffer.toArray(NumberFormat.UInt8LE)
-            for (let i = 0; i < myArr.length; i++) {
-                // serial.writeLine(myArr[i].toString());
+            let myArr = buffer.toArray(NumberFormat.UInt8LE);
+            serial.writeLine('\n');
 
-            }
-
-            // serial.writeLine(buffer.toString());
-
-            let countIndex = 0;
-
-            while (buffer.length > countIndex) {
-                let c = String.fromCharCode(buffer[countIndex]);
-                tempCharHeader += c;
-
-                // Kiểm tra điều kiện như trong C++
-                if (countIndex > 3) {
-                    if (tempHeader.lenData !== 0) {
-                        if (countIndex < (tempHeader.lenData + 4)) {
-                            dataString += c;  // Thêm dữ liệu vào chuỗi
+            // serial.writeNumbers(myArr);
+            /**
+             * test ok d07m03y25
+             */
+            if (myArr[0] == 0)
+                if (myArr[1] == 50)
+                    if (myArr[2] != 0)
+                        if (myArr[3] == myArr[2]) {
+                            serial.writeLine("HEADER PASS");
+                            serial.writeNumber(myArr[3]);
+                            serial.writeLine('\n')
+                            // if (myArr[3] == (myArr.length - 4))
+                            // serial.writeLine(myArr.length.toString())
+                            let tempArrData: number[] = []
+                            for (let i = 0; i < myArr[3]; i++) {
+                                tempArrData.push(myArr[i + 4]);
+                                tempStringData += String.fromCharCode(myArr[i + 4])
+                            }
+                            serial.writeNumbers(tempArrData);
+                            serial.writeLine(tempStringData);
+                            // tempStringData = tempArrData.join("");
                         }
-                    } else {
-                        isEmptyData = true;  // Không còn dữ liệu để nhận
-                        // serial.writeLine(dataString)
-                    }
-                }
-                countIndex++;
-            }
-            // DBSerial(tempCharHeader);
+            /**
+             * end
+             */
+
             DBSerial('\n');
+            isEmptyData = true;
+
         }
         // Nếu có dữ liệu, thực hiện xử lý
-        if (dataString.length > 0) {
+        if (tempStringData.length > 0) {
             control.waitMicros(10000);  // Tạm dừng trước khi gửi dữ liệu qua serial
-            // DBSerial(dataString);
+            serial.writeLine(tempStringData)
+            // serial.writeLine('\n')
 
             // Kiểm tra và xử lý dữ liệu nếu là lệnh Virtual Pin RX
-            if (dataString.indexOf(BLYNK_I2C_CMD_VIRTUAL_PIN_RX) == 0) {
-                let tempVirtualPin = splitString(dataString, BLYNK_I2C_CMD_VIRTUAL_PIN_RX, " ", " ", 0);
-                let valueTemp = splitString(dataString, BLYNK_I2C_CMD_VIRTUAL_PIN_RX, " ", " ", 1);
+            if (tempStringData.indexOf(BLYNK_I2C_CMD_VIRTUAL_PIN_RX) !== -1) {
+                serial.writeLine("614");
 
-                // DBSerial(tempVirtualPin);
-                // DBSerial(valueTemp);
+                // Tách chuỗi bằng cách loại bỏ chữ "EATR"
+                let parts = tempStringData.split(" "); // Chia chuỗi thành mảng dựa vào khoảng trắng
+                let pin = parseInt(parts[1]); // Lấy phần tử thứ 2 và chuyển thành số nguyên
+                let value = parseFloat(parts[2]); // Lấy phần tử thứ 3 và chuyển thành số thực (float)
 
-                let request1 = { pin: parseInt(tempVirtualPin) };
-                let param = { len: valueTemp.length, buff: valueTemp, buff_size: valueTemp.length };
+                callback(pin, value);
+
             }
         }
+        tempStringData = '';
     }
 }
 
-class KeyValuePair<K, V> {
-    constructor(public key: K, public value: V) { }
-}
-
-class Queue<K, V> {
-    private queue: KeyValuePair<K, V>[];
-    private front: number;
-    private rear: number;
-    private count: number;
-    private size: number;
-
-    constructor(size: number) {
-        this.queue = [];
-        this.front = 0;
-        this.rear = -1;
-        this.count = 0;
-        this.size = size;
-    }
-
-    enqueue(key: K, value: V): void {
-        if (this.count === this.size) {
-            // Queue is full
-            console.log("Queue is full.");
-        } else {
-            for (let i = 0; i < this.count; i++) {
-                if (this.queue[(this.front + i) % this.size].key === key) {
-                    this.queue[(this.front + i) % this.size].value = value;
-                    return;
-                }
-            }
-            this.rear = (this.rear + 1) % this.size;
-            this.queue[this.rear] = new KeyValuePair(key, value);
-            this.count++;
-        }
-    }
-
-    dequeue(): KeyValuePair<K, V> {
-        if (this.count === 0) {
-            // Queue is empty
-            console.log("Queue is empty.");
-            return new KeyValuePair<K, V>(null, null);
-        } else {
-            const kv = this.queue[this.front];
-            this.front = (this.front + 1) % this.size;
-            this.count--;
-            return kv;
-        }
-    }
-
-    getQueueSize(): number {
-        return this.count;
-    }
-}
-
-class BlynkWriteDefualt {
-    Write() {
-    }
-}
-
-// class externBlynkWriteDefualt extends BlynkWriteDefualt {
-//     Write(vPin: )
-// }
