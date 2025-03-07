@@ -160,14 +160,26 @@ namespace BlynkGate {
             };
 
             // Gửi lệnh GET_DATA qua I2C
-            tempCharHeader += String.fromCharCode(1);  // Thêm header (giống với `tempHeader` trong C++)
-            serial.writeLine(tempCharHeader)
+            tempCharHeader += String.fromCharCode(0x00);  // Thêm header (giống với `tempHeader` trong C++)
+            tempCharHeader += String.fromCharCode(0x01);  // Thêm header (giống với `tempHeader` trong C++)
+            tempCharHeader += String.fromCharCode(0x00);  // Thêm header (giống với `tempHeader` trong C++)
+            tempCharHeader += String.fromCharCode(0x00);  // Thêm header (giống với `tempHeader` trong C++)
+            // serial.writeLine(tempCharHeader)
             I2C_writeString(slaveAddress, tempCharHeader, tempCharHeader.length);
 
             control.waitMicros(1000);  // Tạm dừng một chút để I2C trả lời
 
             let buffer = pins.i2cReadBuffer(slaveAddress, 32);  // Đọc dữ liệu từ I2C
-            DBSerial(buffer.toHex());
+            serial.writeBuffer(buffer);
+            // serial.
+            let myArr = buffer.toArray(NumberFormat.UInt8LE)
+            for (let i = 0; i < myArr.length; i++) {
+                // serial.writeLine(myArr[i].toString());
+
+            }
+
+            // serial.writeLine(buffer.toString());
+
             let countIndex = 0;
 
             while (buffer.length > countIndex) {
@@ -182,6 +194,7 @@ namespace BlynkGate {
                         }
                     } else {
                         isEmptyData = true;  // Không còn dữ liệu để nhận
+                        // serial.writeLine(dataString)
                     }
                 }
                 countIndex++;
@@ -195,7 +208,7 @@ namespace BlynkGate {
             // DBSerial(dataString);
 
             // Kiểm tra và xử lý dữ liệu nếu là lệnh Virtual Pin RX
-            if (dataString.indexOf(BLYNK_I2C_CMD_VIRTUAL_PIN_RX) === 0) {
+            if (dataString.indexOf(BLYNK_I2C_CMD_VIRTUAL_PIN_RX) == 0) {
                 let tempVirtualPin = splitString(dataString, BLYNK_I2C_CMD_VIRTUAL_PIN_RX, " ", " ", 0);
                 let valueTemp = splitString(dataString, BLYNK_I2C_CMD_VIRTUAL_PIN_RX, " ", " ", 1);
 

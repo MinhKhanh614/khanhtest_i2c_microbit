@@ -55,3 +55,6 @@ basic.forever(function () {
 
 
 
+// loops.everyInterval(500, function() {
+//     BlynkGate.checkI2CThenSendSerial
+// })
