@@ -12,27 +12,32 @@ namespace Profile {
 
 BlynkGate.connect(Profile.AUTH_TOKEN, Profile.SSID, Profile.PASSWORD)
 
-let bttState: number = 1;
-
+let bttState: number = 0;
+let sensorVal: number = 0;
 
 basic.forever(function () {
+    BlynkGate.checkI2CThenSendSerial(handleI2CData)
     input.onButtonPressed(Button.A, function () {
         bttState = bttState - 1;
         if (bttState < 0) bttState = 1;
         BlynkGate.virtualWrite(4, bttState.toString());
     })
-    basic.showNumber(bttState);
-    BlynkGate.checkI2CThenSendSerial(handleI2CData)
+    // basic.showNumber(bttState,100);
+    basic.showNumber(sensorVal,100);
+    
 })
 
 // Hàm callback xử lý dữ liệu
 function handleI2CData(pin: number, value: number): void {
-    // console.log(`Pin: ${pin}, Value: ${value}`);
-    serial.writeLine(pin.toString())
-    serial.writeLine(value.toString())
+    // serial.writeLine(pin.toString())
+    // serial.writeLine(value.toString())
     // Thực hiện các tác vụ khác ở đây
     if (pin === 4) {
-        // console.log(`Special processing for pin 4: ${value}`);
         bttState = value;
+    }
+    
+    if(pin==1)
+    {
+        sensorVal = value;
     }
 }

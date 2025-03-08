@@ -62,19 +62,12 @@ namespace BlynkGate {
         tempStr += " ";
         tempStr += strValue_;
         tempStr += "\n";
-        console.log(tempStr);
-        DBSerial(tempStr);
         SetupCharArrayToBuffer4(tempStr, tempStr.length);
-        // SendStringToI2C(tempStr);
     }
 
     export function I2C_writeString(myAdd: number, myString: string, myLen: number): void {
         pins.i2cWriteBuffer(myAdd, pins.createBufferFromArray(myString.split('').map(c => c.charCodeAt(0))));
         control.waitMicros(1000);
-    }
-
-    function DBSerial(message: string): void {
-        serial.writeLine(message);
     }
 
     export function SetupCharArrayToBuffer4(inputCharArray: string, len: number): void {
@@ -84,7 +77,6 @@ namespace BlynkGate {
             let temHeader: SerialBlynkI2CData = {
                 id: '0',
                 modeId: '2',
-                // modeId: '1',
                 lenData: 0,
                 checkSumData: 0,
                 data: ''
@@ -98,14 +90,9 @@ namespace BlynkGate {
             temHeader.checkSumData = temHeader.lenData;
 
             const pSplitArray = inputCharArray.substr(cf * KXN_BYTE_PER_TIME_SEND, temHeader.lenData + 1);
-
-            DBSerial("subString: ");
-            DBSerial(pSplitArray);
-            DBSerial("temHeader->lenData: " + temHeader.lenData);
-
             temHeader.data = pSplitArray;
             const tempArrChar = temHeader.id + temHeader.modeId + String.fromCharCode(temHeader.lenData) + String.fromCharCode(temHeader.checkSumData) + temHeader.data;
-            DBSerial(tempArrChar);
+            // DBSerial(tempArrChar);
             I2C_writeString(slaveAddress, tempArrChar, temHeader.lenData + 4);
             control.waitMicros(1000);
         }
@@ -139,9 +126,9 @@ namespace BlynkGate {
             control.waitMicros(1000);  // Tạm dừng một chút để I2C trả lời
 
             let buffer = pins.i2cReadBuffer(slaveAddress, 32);  // Đọc dữ liệu từ I2C
-            serial.writeBuffer(buffer);
+            // serial.writeBuffer(buffer);
             let myArr = buffer.toArray(NumberFormat.UInt8LE);
-            serial.writeLine('\n');
+            // serial.writeLine('\n');
 
             // serial.writeNumbers(myArr);
             /**
@@ -151,9 +138,9 @@ namespace BlynkGate {
                 if (myArr[1] == 50)
                     if (myArr[2] != 0)
                         if (myArr[3] == myArr[2]) {
-                            serial.writeLine("HEADER PASS");
-                            serial.writeNumber(myArr[3]);
-                            serial.writeLine('\n')
+                            // serial.writeLine("HEADER PASS");
+                            // serial.writeNumber(myArr[3]);
+                            // serial.writeLine('\n')
                             // if (myArr[3] == (myArr.length - 4))
                             // serial.writeLine(myArr.length.toString())
                             let tempArrData: number[] = []
@@ -161,27 +148,23 @@ namespace BlynkGate {
                                 tempArrData.push(myArr[i + 4]);
                                 tempStringData += String.fromCharCode(myArr[i + 4])
                             }
-                            serial.writeNumbers(tempArrData);
-                            serial.writeLine(tempStringData);
+                            // serial.writeNumbers(tempArrData);
+                            // serial.writeLine(tempStringData);
                             // tempStringData = tempArrData.join("");
                         }
             /**
              * end
              */
 
-            DBSerial('\n');
             isEmptyData = true;
 
         }
         // Nếu có dữ liệu, thực hiện xử lý
         if (tempStringData.length > 0) {
             control.waitMicros(10000);  // Tạm dừng trước khi gửi dữ liệu qua serial
-            serial.writeLine(tempStringData)
-            // serial.writeLine('\n')
 
             // Kiểm tra và xử lý dữ liệu nếu là lệnh Virtual Pin RX
             if (tempStringData.indexOf(BLYNK_I2C_CMD_VIRTUAL_PIN_RX) !== -1) {
-                serial.writeLine("614");
 
                 // Tách chuỗi bằng cách loại bỏ chữ "EATR"
                 let parts = tempStringData.split(" "); // Chia chuỗi thành mảng dựa vào khoảng trắng
