@@ -23,8 +23,8 @@ basic.forever(function () {
         BlynkGate.virtualWrite(4, bttState.toString());
     })
     // basic.showNumber(bttState,100);
-    basic.showNumber(sensorVal,100);
-    
+    basic.showNumber(sensorVal, 100);
+
 })
 
 // Hàm callback xử lý dữ liệu
@@ -35,9 +35,8 @@ function handleI2CData(pin: number, value: number): void {
     if (pin === 4) {
         bttState = value;
     }
-    
-    if(pin==1)
-    {
+
+    if (pin == 1) {
         sensorVal = value;
     }
 }
