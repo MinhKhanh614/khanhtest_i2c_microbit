@@ -1,4 +1,4 @@
-// tests go here; this will not be compiled when this package is used as an extension.
+ // tests go here; this will not be compiled when this package is used as an extension.
 namespace BlynkConfig {
     export const TEMPLATE_ID: string = "TMPL6koTRhUeq";
     export const TEMPLATE_NAME: string = "IOT Garden";

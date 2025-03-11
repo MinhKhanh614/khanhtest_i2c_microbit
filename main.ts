@@ -1,3 +1,4 @@
+//% color="#4CAF50"
 namespace BlynkGate {
 
     const slaveAddress = 74; // Địa chỉ I2C của thiết bị slave
@@ -23,8 +24,10 @@ namespace BlynkGate {
     let ssid: string
     let pass: string
 
-    interface BlynkReq {
-        pin: number;
+    export function setup(input_auth: string, input_ssid: string, input_pass: string) {
+        auth = input_auth;
+        ssid = input_ssid;
+        pass = input_pass;
     }
 
 
