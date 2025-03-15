@@ -24,7 +24,7 @@ namespace BlynkGate {
     let ssid: string
     let pass: string
 
-    //% block ="M16 Blynk Gate \\| Connect to WiFi 2.4G SSID $ssid_ PASS $pass_ AUTH TOKER $auth_"
+    //% block ="Connect to WiFi 2.4G"
     export function setup(input_auth: string, input_ssid: string, input_pass: string) {
         auth = input_auth;
         ssid = input_ssid;
