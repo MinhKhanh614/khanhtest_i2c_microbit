@@ -187,6 +187,7 @@ namespace BlynkGate {
         }
         tempStringData = '';
     }
+
     let RunWhenRecievingData: () => void = () => {
         // Mặc định không làm gì.
     };
@@ -204,5 +205,11 @@ namespace BlynkGate {
     export function getValue(): number {
         return value;
     }
-}
 
+    //% block
+    //% inputVariable.defl=someName
+    //% inputVariable.shadow=variables_get
+    export function setVirtualValue(inputVariable: number, virtualPin: number) {
+
+    }
+}
