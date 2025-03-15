@@ -30,7 +30,7 @@ namespace BlynkGate {
         pass = input_pass;
     }
 
-
+    //% block
     export function connect(auth_: string, ssid_: string, pass_: string) {
         // Tạo chuỗi dữ liệu theo định dạng mong muốn
         let loStr = "connect " + auth_ + " " + ssid_ + " " + pass_ + '\n'
@@ -44,7 +44,7 @@ namespace BlynkGate {
     }
 
 
-
+    //% block
     export function SendStringToI2C(loStr: string) {
         // Chuyển đổi chuỗi thành buffer
         let buffer = pins.createBuffer(loStr.length)
@@ -57,7 +57,7 @@ namespace BlynkGate {
         serial.writeBuffer(buffer)
         pins.i2cWriteBuffer(address, buffer, false)
     }
-
+    //% block
     export function virtualWrite(vx_: number, strValue_: string): void {
         let tempStr = BLYNK_I2C_CMD_VIRTUAL_PIN_TX;
         tempStr += " ";
@@ -67,12 +67,12 @@ namespace BlynkGate {
         tempStr += "\n";
         SetupCharArrayToBuffer4(tempStr, tempStr.length);
     }
-
+    //% block
     export function I2C_writeString(myAdd: number, myString: string, myLen: number): void {
         pins.i2cWriteBuffer(myAdd, pins.createBufferFromArray(myString.split('').map(c => c.charCodeAt(0))));
         control.waitMicros(1000);
     }
-
+    //% block
     export function SetupCharArrayToBuffer4(inputCharArray: string, len: number): void {
         const timeSend = Math.floor(len / KXN_BYTE_PER_TIME_SEND);
 
@@ -100,7 +100,7 @@ namespace BlynkGate {
             control.waitMicros(1000);
         }
     }
-
+    //% block
     export function checkI2CThenSendSerial(callback: (pin: number, value: number) => void): void {
 
         let isEmptyData = false;
