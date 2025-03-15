@@ -24,6 +24,7 @@ namespace BlynkGate {
     let ssid: string
     let pass: string
 
+    //% block ="M16 Blynk Gate \\| Connect to WiFi 2.4G SSID $ssid_ PASS $pass_ AUTH TOKER $auth_"
     export function setup(input_auth: string, input_ssid: string, input_pass: string) {
         auth = input_auth;
         ssid = input_ssid;
@@ -32,14 +33,9 @@ namespace BlynkGate {
     /**
      * @param TEST
      */
-    //% block ="M16 Blynk Gate \\| Connect to WiFi 2.4G SSID $ssid_ PASS $pass_ AUTH TOKER $auth_"
     export function connect(auth_: string, ssid_: string, pass_: string) {
         // Tạo chuỗi dữ liệu theo định dạng mong muốn
         let loStr = "connect " + auth_ + " " + ssid_ + " " + pass_ + '\n'
-        auth = auth_
-        ssid = ssid_
-        pass = pass_
-
         // Gửi chuỗi dữ liệu qua giao thức I2C
         SendStringToI2C(loStr)
         // DBSerial(loStr)
