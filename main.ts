@@ -24,7 +24,9 @@ namespace BlynkGate {
     let ssid: string
     let pass: string
 
-    //% block="M16 Blynk Gate \\| Connect to WiFi 2.4G SSID $input_ssid PASS $input_pass AUTH TOKER $input_auth"
+    let value: number;
+    let pin: number;
+    //% block="M16 Blynk Gate I2C \\| Connect to WiFi 2.4G SSID $input_ssid , PASS $input_pass , AUTH TOKEN $input_auth"
     export function setup(input_auth: string, input_ssid: string, input_pass: string) {
         auth = input_auth;
         ssid = input_ssid;
@@ -45,7 +47,7 @@ namespace BlynkGate {
     }
 
 
-    //% block
+
     export function SendStringToI2C(loStr: string) {
         // Chuyển đổi chuỗi thành buffer
         let buffer = pins.createBuffer(loStr.length)
@@ -58,6 +60,7 @@ namespace BlynkGate {
         serial.writeBuffer(buffer)
         pins.i2cWriteBuffer(address, buffer, false)
     }
+
     //% block
     export function virtualWrite(vx_: number, strValue_: string): void {
         let tempStr = BLYNK_I2C_CMD_VIRTUAL_PIN_TX;
@@ -68,12 +71,13 @@ namespace BlynkGate {
         tempStr += "\n";
         SetupCharArrayToBuffer4(tempStr, tempStr.length);
     }
-    //% block
+
+
     export function I2C_writeString(myAdd: number, myString: string, myLen: number): void {
         pins.i2cWriteBuffer(myAdd, pins.createBufferFromArray(myString.split('').map(c => c.charCodeAt(0))));
         control.waitMicros(1000);
     }
-    //% block
+
     export function SetupCharArrayToBuffer4(inputCharArray: string, len: number): void {
         const timeSend = Math.floor(len / KXN_BYTE_PER_TIME_SEND);
 
@@ -102,7 +106,7 @@ namespace BlynkGate {
         }
     }
     //% block
-    export function checkI2CThenSendSerial(callback: (pin: number, value: number) => void): void {
+    export function checkI2CThenSendSerial() {
 
         let isEmptyData = false;
         let tempStringData: string = '';
@@ -172,14 +176,33 @@ namespace BlynkGate {
 
                 // Tách chuỗi bằng cách loại bỏ chữ "EATR"
                 let parts = tempStringData.split(" "); // Chia chuỗi thành mảng dựa vào khoảng trắng
-                let pin = parseInt(parts[1]); // Lấy phần tử thứ 2 và chuyển thành số nguyên
-                let value = parseFloat(parts[2]); // Lấy phần tử thứ 3 và chuyển thành số thực (float)
+                pin = parseInt(parts[1]); // Lấy phần tử thứ 2 và chuyển thành số nguyên
+                value = parseFloat(parts[2]); // Lấy phần tử thứ 3 và chuyển thành số thực (float)
 
-                callback(pin, value);
+                RunWhenRecievingData();
 
             }
+            pin = 0;
+            value = 0;
         }
         tempStringData = '';
+    }
+    let RunWhenRecievingData: () => void = () => {
+        // Mặc định không làm gì.
+    };
+
+    //% block ="M16 Blynk Gate I2C \\| When Recieving Data"
+    export function whenRecievingData(handler: () => void) {
+        // handler();
+        RunWhenRecievingData = handler;
+    }
+    //% block
+    export function getPin(): number {
+        return pin;
+    }
+    //% block
+    export function getValue(): number {
+        return value;
     }
 }
 
